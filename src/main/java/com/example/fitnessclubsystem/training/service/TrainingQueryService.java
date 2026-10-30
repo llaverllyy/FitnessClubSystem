@@ -3,15 +3,19 @@ package com.example.fitnessclubsystem.training.service;
 import com.example.fitnessclubsystem.shared.exception.NotFoundException;
 import com.example.fitnessclubsystem.training.domain.ClassEntity;
 import com.example.fitnessclubsystem.training.domain.ScheduleEntity;
+import com.example.fitnessclubsystem.training.dto.ClassFilter;
 import com.example.fitnessclubsystem.training.dto.ClassItemDto;
 import com.example.fitnessclubsystem.training.dto.ScheduleFilter;
 import com.example.fitnessclubsystem.training.dto.ScheduleItemDto;
+import com.example.fitnessclubsystem.training.dto.ScheduleStatsDto;
 import com.example.fitnessclubsystem.training.persistence.ClassRepository;
 import com.example.fitnessclubsystem.training.persistence.ScheduleRepository;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +38,21 @@ public class TrainingQueryService {
                 .orElseThrow(() -> new NotFoundException("Class", id));
     }
 
+    public List<ClassItemDto> findClasses(ClassFilter filter) {
+        ClassFilter safe = filter == null
+                ? new ClassFilter(null, null, null, null, null, null)
+                : filter;
+        return classRepository.findAllWithCategory().stream()
+                .filter(c -> safe.categoryId() == null || c.getCategory().getId().equals(safe.categoryId()))
+                .filter(c -> safe.trainerId() == null || c.getTrainerId().equals(safe.trainerId()))
+                .filter(c -> safe.status() == null || c.getStatus().equals(safe.status()))
+                .filter(c -> safe.titleContains() == null
+                        || c.getTitle().toLowerCase(Locale.ROOT).contains(safe.titleContains().toLowerCase(Locale.ROOT)))
+                .sorted(classComparator(safe.sortBy(), safe.sortDirection()))
+                .map(this::toClassDto)
+                .toList();
+    }
+
     public ScheduleItemDto getScheduleById(UUID id) {
         return scheduleRepository.findDetailedById(id)
                 .map(this::toScheduleDto)
@@ -42,9 +61,9 @@ public class TrainingQueryService {
 
     public List<ScheduleItemDto> findSchedules(ScheduleFilter filter) {
         ScheduleFilter safe = filter == null
-                ? new ScheduleFilter(null, null, null, null, null)
+                ? new ScheduleFilter(null, null, null, null, null, null, null)
                 : filter;
-        return scheduleRepository.findByFilter(
+        List<ScheduleItemDto> items = scheduleRepository.findByFilter(
                         safe.trainerId(),
                         safe.categoryId(),
                         safe.status(),
@@ -53,6 +72,7 @@ public class TrainingQueryService {
                 .stream()
                 .map(this::toScheduleDto)
                 .toList();
+        return sortSchedules(items, safe.sortBy(), safe.sortDirection());
     }
 
     public List<ScheduleItemDto> findTrainerSchedule(UUID trainerId, OffsetDateTime from, OffsetDateTime to) {
@@ -61,7 +81,40 @@ public class TrainingQueryService {
                 .toList();
     }
 
-    private ClassItemDto toClassDto(ClassEntity entity) {
+    public ScheduleStatsDto scheduleStats(ScheduleFilter filter) {
+        List<ScheduleItemDto> items = findSchedules(filter);
+        int planned = (int) items.stream().filter(i -> "PLANNED".equals(i.status())).count();
+        int completed = (int) items.stream().filter(i -> "COMPLETED".equals(i.status())).count();
+        int cancelled = (int) items.stream().filter(i -> "CANCELLED".equals(i.status())).count();
+        int slots = items.stream().mapToInt(ScheduleItemDto::availableSlots).sum();
+        return new ScheduleStatsDto(items.size(), planned, completed, cancelled, slots);
+    }
+
+    private List<ScheduleItemDto> sortSchedules(List<ScheduleItemDto> items, String sortBy, String sortDirection) {
+        Comparator<ScheduleItemDto> comparator = switch (sortBy == null ? "START_TIME" : sortBy) {
+            case "AVAILABLE_SLOTS" -> Comparator.comparing(ScheduleItemDto::availableSlots);
+            case "STATUS" -> Comparator.comparing(ScheduleItemDto::status);
+            default -> Comparator.comparing(ScheduleItemDto::startTime);
+        };
+        if ("DESC".equalsIgnoreCase(sortDirection)) {
+            comparator = comparator.reversed();
+        }
+        return items.stream().sorted(comparator).toList();
+    }
+
+    private Comparator<ClassEntity> classComparator(String sortBy, String sortDirection) {
+        Comparator<ClassEntity> comparator = switch (sortBy == null ? "TITLE" : sortBy.toUpperCase(Locale.ROOT)) {
+            case "CAPACITY" -> Comparator.comparing(ClassEntity::getCapacity);
+            case "STATUS" -> Comparator.comparing(ClassEntity::getStatus);
+            default -> Comparator.comparing(ClassEntity::getTitle);
+        };
+        if ("DESC".equalsIgnoreCase(sortDirection)) {
+            comparator = comparator.reversed();
+        }
+        return comparator;
+    }
+
+    ClassItemDto toClassDto(ClassEntity entity) {
         return new ClassItemDto(
                 entity.getId(),
                 entity.getTitle(),

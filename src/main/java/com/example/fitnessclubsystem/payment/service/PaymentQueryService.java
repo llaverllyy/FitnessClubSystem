@@ -2,6 +2,8 @@ package com.example.fitnessclubsystem.payment.service;
 
 import com.example.fitnessclubsystem.payment.domain.PaymentEntity;
 import com.example.fitnessclubsystem.payment.dto.PaymentItemDto;
+import com.example.fitnessclubsystem.payment.dto.PaymentStatsDto;
+import com.example.fitnessclubsystem.payment.dto.PaymentStatsFilter;
 import com.example.fitnessclubsystem.payment.persistence.PaymentRepository;
 import com.example.fitnessclubsystem.shared.exception.NotFoundException;
 import java.time.Instant;
@@ -32,6 +34,30 @@ public class PaymentQueryService {
         return paymentRepository.findByClientIdOrderByCreatedAtDesc(clientId).stream()
                 .map(this::toDto)
                 .toList();
+    }
+
+    public PaymentStatsDto stats(PaymentStatsFilter filter) {
+        PaymentStatsFilter safe = filter == null ? new PaymentStatsFilter(null, null) : filter;
+        List<PaymentItemDto> items = paymentRepository.findAll().stream()
+                .filter(p -> safe.clientId() == null || p.getClientId().equals(safe.clientId()))
+                .filter(p -> safe.status() == null || p.getStatus().equals(safe.status()))
+                .map(this::toDto)
+                .toList();
+
+        double totalAmount = items.stream().mapToDouble(PaymentItemDto::amount).sum();
+        double completedAmount = items.stream()
+                .filter(p -> "COMPLETED".equals(p.status()))
+                .mapToDouble(PaymentItemDto::amount)
+                .sum();
+
+        return new PaymentStatsDto(
+                items.size(),
+                (int) items.stream().filter(p -> "COMPLETED".equals(p.status())).count(),
+                (int) items.stream().filter(p -> "FAILED".equals(p.status())).count(),
+                (int) items.stream().filter(p -> "PENDING".equals(p.status())).count(),
+                totalAmount,
+                completedAmount
+        );
     }
 
     private PaymentItemDto toDto(PaymentEntity entity) {

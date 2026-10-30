@@ -8,6 +8,16 @@ public record ScheduleFilter(
         UUID categoryId,
         OffsetDateTime startDate,
         OffsetDateTime endDate,
-        String status
+        String status,
+        String sortBy,
+        String sortDirection
 ) {
+    public ScheduleFilter(
+            UUID trainerId,
+            UUID categoryId,
+            OffsetDateTime startDate,
+            OffsetDateTime endDate,
+            String status) {
+        this(trainerId, categoryId, startDate, endDate, status, null, null);
+    }
 }

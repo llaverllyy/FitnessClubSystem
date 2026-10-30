@@ -18,6 +18,12 @@ public class GraphQlExceptionResolver extends DataFetcherExceptionResolverAdapte
                     .errorType(ErrorType.NOT_FOUND)
                     .build();
         }
+        if (ex instanceof BusinessRuleException) {
+            return GraphqlErrorBuilder.newError(env)
+                    .message(ex.getMessage())
+                    .errorType(ErrorType.BAD_REQUEST)
+                    .build();
+        }
         return null;
     }
 }

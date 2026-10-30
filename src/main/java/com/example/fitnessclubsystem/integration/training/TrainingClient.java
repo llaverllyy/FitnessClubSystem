@@ -7,4 +7,10 @@ import java.util.UUID;
 public interface TrainingClient {
 
     Optional<ScheduleItemDto> findScheduleById(UUID scheduleId);
+
+    ScheduleItemDto requireAvailableSchedule(UUID scheduleId);
+
+    ScheduleItemDto reserveSlot(UUID scheduleId);
+
+    ScheduleItemDto releaseSlot(UUID scheduleId);
 }

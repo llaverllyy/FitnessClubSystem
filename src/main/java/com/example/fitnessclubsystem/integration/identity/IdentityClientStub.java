@@ -2,6 +2,7 @@ package com.example.fitnessclubsystem.integration.identity;
 
 import com.example.fitnessclubsystem.identity.dto.TrainerProfileDto;
 import com.example.fitnessclubsystem.identity.service.IdentityQueryService;
+import com.example.fitnessclubsystem.shared.exception.BusinessRuleException;
 import com.example.fitnessclubsystem.shared.exception.NotFoundException;
 import java.util.Optional;
 import java.util.UUID;
@@ -23,5 +24,14 @@ public class IdentityClientStub implements IdentityClient {
         } catch (NotFoundException ex) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public TrainerProfileDto requireActiveTrainer(UUID trainerId) {
+        TrainerProfileDto trainer = identityQueryService.getTrainer(trainerId);
+        if (!"ACTIVE".equals(trainer.employmentStatus())) {
+            throw new BusinessRuleException("Trainer is not active: " + trainerId);
+        }
+        return trainer;
     }
 }

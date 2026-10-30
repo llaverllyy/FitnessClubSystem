@@ -33,21 +33,67 @@ enum PaymentStatus {
   FAILED
 }
 
+enum SortDirection {
+  ASC
+  DESC
+}
+
+enum ScheduleSortField {
+  START_TIME
+  AVAILABLE_SLOTS
+  STATUS
+}
+
+enum BookingSortField {
+  BOOKED_AT
+  STATUS
+}
+
 type Query {
   me: UserProfile!
   user(id: ID!): UserProfile!
   classById(id: ID!): ClassItem!
-  schedule(filter: ScheduleFilterInput): [ScheduleItem!]!
+  classes(filter: ClassFilterInput, sortBy: String, sortDirection: SortDirection): [ClassItem!]!
+  schedule(filter: ScheduleFilterInput, sortBy: ScheduleSortField, sortDirection: SortDirection): [ScheduleItem!]!
   scheduleById(id: ID!): ScheduleItem!
   trainerSchedule(trainerId: ID!, from: DateTime, to: DateTime): [ScheduleItem!]!
-  myBookings(status: BookingStatus): [BookingItem!]!
+  myBookings(status: BookingStatus, sortBy: BookingSortField, sortDirection: SortDirection): [BookingItem!]!
+  bookings(filter: BookingFilterInput, sortBy: BookingSortField, sortDirection: SortDirection): [BookingItem!]!
   bookingById(id: ID!): BookingItem!
   mySubscriptions: [SubscriptionItem!]!
   subscriptionById(id: ID!): SubscriptionItem!
+  subscriptionPlans(activeOnly: Boolean = true): [SubscriptionPlanItem!]!
   myPayments: [PaymentItem!]!
   paymentById(id: ID!): PaymentItem!
   myNotifications(unreadOnly: Boolean = false): [NotificationItem!]!
   analytics(filter: AnalyticsFilterInput!): AnalyticsReport!
+  bookingStats(filter: BookingFilterInput): BookingStats!
+  paymentStats(filter: PaymentStatsFilterInput): PaymentStats!
+  scheduleStats(filter: ScheduleFilterInput): ScheduleStats!
+}
+
+type Mutation {
+  registerUser(input: RegisterUserInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  createClass(input: CreateClassInput!): ClassItem!
+  updateClass(input: UpdateClassInput!): ClassItem!
+  createSchedule(input: CreateScheduleInput!): ScheduleItem!
+  changeScheduleStatus(input: ChangeScheduleStatusInput!): ScheduleItem!
+  purchaseSubscription(input: PurchaseSubscriptionInput!): SubscriptionPurchasePayload!
+  confirmPayment(input: ConfirmPaymentInput!): PaymentItem!
+  bookSchedule(input: BookScheduleInput!): BookingItem!
+  cancelBooking(input: CancelBookingInput!): BookingItem!
+  markAttendance(input: MarkAttendanceInput!): BookingItem!
+}
+
+type AuthPayload {
+  accessToken: String!
+  user: UserProfile!
+}
+
+type SubscriptionPurchasePayload {
+  subscription: SubscriptionItem!
+  payment: PaymentItem!
 }
 
 type UserProfile {
@@ -95,6 +141,15 @@ type ScheduleItem {
   availableSlots: Int!
   classItem: ClassItem
   hallName: String
+}
+
+type SubscriptionPlanItem {
+  id: ID!
+  name: String!
+  durationDays: Int!
+  visitLimit: Int!
+  price: Float!
+  active: Boolean!
 }
 
 type SubscriptionItem {
@@ -174,12 +229,129 @@ type ActiveClientItem {
   cancellationsCount: Int!
 }
 
+type BookingStats {
+  totalCount: Int!
+  bookedCount: Int!
+  cancelledCount: Int!
+  attendedCount: Int!
+  noShowCount: Int!
+}
+
+type PaymentStats {
+  totalCount: Int!
+  completedCount: Int!
+  failedCount: Int!
+  pendingCount: Int!
+  totalAmount: Float!
+  completedAmount: Float!
+}
+
+type ScheduleStats {
+  totalCount: Int!
+  plannedCount: Int!
+  completedCount: Int!
+  cancelledCount: Int!
+  totalAvailableSlots: Int!
+}
+
+input RegisterUserInput {
+  email: String!
+  password: String!
+  role: UserRole!
+  fullName: String!
+  phone: String!
+  birthDate: String
+  specialization: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input CreateClassInput {
+  title: String!
+  description: String
+  durationMinutes: Int!
+  capacity: Int!
+  categoryId: ID!
+  trainerId: ID!
+}
+
+input UpdateClassInput {
+  id: ID!
+  title: String
+  description: String
+  durationMinutes: Int
+  capacity: Int
+  categoryId: ID
+  trainerId: ID
+  status: String
+}
+
+input CreateScheduleInput {
+  classId: ID!
+  hallId: ID!
+  trainerId: ID!
+  startTime: DateTime!
+  endTime: DateTime!
+}
+
+input ChangeScheduleStatusInput {
+  scheduleId: ID!
+  status: ScheduleStatus!
+}
+
+input PurchaseSubscriptionInput {
+  clientId: ID!
+  planId: ID!
+  paymentMethod: String!
+}
+
+input ConfirmPaymentInput {
+  paymentId: ID!
+  status: PaymentStatus!
+}
+
+input BookScheduleInput {
+  clientId: ID!
+  scheduleId: ID!
+  subscriptionId: ID!
+}
+
+input CancelBookingInput {
+  bookingId: ID!
+}
+
+input MarkAttendanceInput {
+  bookingId: ID!
+  status: BookingStatus!
+}
+
 input ScheduleFilterInput {
   trainerId: ID
   categoryId: ID
   startDate: DateTime
   endDate: DateTime
   status: ScheduleStatus
+}
+
+input ClassFilterInput {
+  categoryId: ID
+  trainerId: ID
+  status: String
+  titleContains: String
+}
+
+input BookingFilterInput {
+  clientId: ID
+  scheduleId: ID
+  status: BookingStatus
+}
+
+input PaymentStatsFilterInput {
+  clientId: ID
+  status: PaymentStatus
 }
 
 input AnalyticsFilterInput {

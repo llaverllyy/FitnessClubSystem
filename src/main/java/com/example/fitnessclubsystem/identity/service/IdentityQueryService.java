@@ -64,6 +64,12 @@ public class IdentityQueryService {
                 .orElseThrow(() -> new NotFoundException("Client", clientId));
     }
 
+    public UUID getUserIdByClientId(UUID clientId) {
+        ClientEntity client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new NotFoundException("Client", clientId));
+        return client.getUser().getId();
+    }
+
     private ClientProfileDto toClientDto(ClientEntity entity) {
         return new ClientProfileDto(
                 entity.getId(),

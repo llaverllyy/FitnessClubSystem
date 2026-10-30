@@ -7,4 +7,6 @@ import java.util.UUID;
 public interface IdentityClient {
 
     Optional<TrainerProfileDto> findTrainerById(UUID trainerId);
+
+    TrainerProfileDto requireActiveTrainer(UUID trainerId);
 }

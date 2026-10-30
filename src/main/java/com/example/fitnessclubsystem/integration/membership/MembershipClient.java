@@ -7,4 +7,10 @@ import java.util.UUID;
 public interface MembershipClient {
 
     Optional<SubscriptionItemDto> findSubscriptionById(UUID subscriptionId);
+
+    SubscriptionItemDto requireValidSubscription(UUID subscriptionId, UUID clientId);
+
+    SubscriptionItemDto activateSubscription(UUID subscriptionId, UUID paymentId);
+
+    SubscriptionItemDto registerVisit(UUID subscriptionId);
 }
