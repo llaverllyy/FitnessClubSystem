@@ -1,0 +1,18 @@
+{
+  "event_id": "d4e5f6a7-b8c9-0123-def0-234567890123",
+  "event_type": "ScheduleCancelled",
+  "occurred_at": "2026-10-30T15:20:00Z",
+  "producer": "training-management-service",
+  "version": 1,
+  "correlation_id": "44444444-5555-6666-7777-888888888888",
+  "payload": {
+    "schedule_id": "sch-2001",
+    "class_id": "cls-3001",
+    "trainer_id": "tr-4001",
+    "hall_id": "hall-5001",
+    "status": "CANCELLED",
+    "start_time": "2026-11-01T09:00:00Z",
+    "end_time": "2026-11-01T10:00:00Z",
+    "reason": "HALL_UNAVAILABLE"
+  }
+}

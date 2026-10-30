@@ -148,26 +148,57 @@ Booking Service обращается в Training Management Service, чтобы 
 
 Booking Service обращается в Membership Service, чтобы проверить действительность абонемента.
 
-Payment Service обращается в Membership Service, чтобы активировать абонемент после успешной оплаты.
+Payment Service обращается в Membership Service через gRPC ActivateSubscription, чтобы активировать абонемент после успешной оплаты.
 
 Training Management Service обращается в Identity Service, чтобы проверить тренера при создании занятия или элемента расписания.
 
 GraphQL Gateway обращается к внутренним сервисам, чтобы собрать ответ на запрос клиента.
 
 Асинхронное взаимодействие между сервисами лучше организовать через Kafka. Этот способ нужен там, где важно сообщить о произошедшем событии, но не требуется немедленный ответ.
-Основные события:
 
-Identity Service публикует события о регистрации пользователя и смене роли.
+Таблица «событие — издатель — подписчики»:
 
-Training Management Service публикует события о создании, изменении или отмене занятия в расписании.
+Событие UserRegistered. Топик user-events. Издатель: Identity Service. Подписчики: Notification Service.
 
-Membership Service публикует события о создании, активации или завершении абонемента.
+Событие ScheduleCreated. Топик schedule-events. Издатель: Training Management Service. Подписчики: Analytics Service.
 
-Booking Service публикует события о записи, отмене записи и фиксации посещения.
+Событие ScheduleStatusChanged. Топик schedule-events. Издатель: Training Management Service. Подписчики: Analytics Service.
 
-Payment Service публикует события об успешной или неуспешной оплате.
+Событие ScheduleCancelled. Топик schedule-events. Издатель: Training Management Service. Подписчики: Booking Service, Notification Service, Analytics Service.
 
-Эти события могут использовать Notification Service и Analytics Service. Кроме того, некоторые сервисы могут реагировать на события других сервисов, если это требуется по бизнес-логике.
+Событие SubscriptionCreated. Топик subscription-events. Издатель: Membership Service. Подписчики: Analytics Service.
+
+Событие SubscriptionActivated. Топик subscription-events. Издатель: Membership Service. Подписчики: Notification Service, Analytics Service.
+
+Событие BookingCreated. Топик booking-events. Издатель: Booking Service. Подписчики: Notification Service, Analytics Service.
+
+Событие BookingCancelled. Топик booking-events. Издатель: Booking Service. Подписчики: Notification Service, Analytics Service.
+
+Событие AttendanceMarked. Топик booking-events. Издатель: Booking Service. Подписчики: Analytics Service.
+
+Событие PaymentCompleted. Топик payment-events. Издатель: Payment Service. Подписчики: Notification Service, Analytics Service.
+
+Событие PaymentFailed. Топик payment-events. Издатель: Payment Service. Подписчики: Notification Service.
+
+Notification Service:
+UserRegistered — приветственное уведомление;
+ScheduleCancelled — уведомление записанным клиентам об отмене занятия;
+BookingCreated — подтверждение записи;
+BookingCancelled — подтверждение отмены записи;
+SubscriptionActivated — уведомление об активации абонемента;
+PaymentCompleted — уведомление об успешной оплате;
+PaymentFailed — уведомление о неуспешной оплате.
+
+Analytics Service:
+ScheduleCreated, ScheduleStatusChanged, ScheduleCancelled — загрузка залов;
+SubscriptionCreated, SubscriptionActivated — активность по абонементам;
+BookingCreated, BookingCancelled, AttendanceMarked — популярность занятий, посещаемость, активность клиентов;
+PaymentCompleted — выручка.
+
+Абонемент активируется через gRPC ActivateSubscription.
+PaymentCompleted не обрабатывается Membership Service.
+После активации Membership Service публикует SubscriptionActivated.
+Примеры событий: docs/contracts/events/.
 
 Почему используется именно такая комбинация технологий:
 GraphQL нужен как единая точка входа для клиента;
@@ -191,6 +222,6 @@ Opportunity Statement
 Создание единой информационной системы позволяет собрать все основные процессы фитнес-клуба в одном месте. Клиенты смогут удобно записываться на занятия и контролировать свои абонементы, тренеры смогут работать с группами и посещаемостью, а администратор получит инструменты для управления расписанием, платежами и аналитикой. В результате работа клуба станет более упорядоченной, количество ошибок уменьшится, а качество обслуживания повысится.
 
 9. Итог
-В ходе работы была спроектирована архитектура системы управления фитнес-клубом. 
-Были определены роли пользователей, основные сценарии, сущности и их связи, набор микросервисов, распределение данных и способы взаимодействия через GraphQL, gRPC и Kafka. 
+В ходе работы была спроектирована архитектура системы управления фитнес-клубом.
+Были определены роли пользователей, основные сценарии, сущности и их связи, набор микросервисов, распределение данных и способы взаимодействия через GraphQL, gRPC и Kafka.
 Такая архитектура может использоваться как основа для дальнейшей разработки системы.

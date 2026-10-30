@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package fitnessclub.membership.v1;
+
+option java_multiple_files = true;
+option java_package = "com.example.fitnessclubsystem.membership.v1";
+
+service MembershipGrpcService {
+  rpc CheckSubscription(CheckSubscriptionRequest) returns (CheckSubscriptionResponse);
+  rpc ActivateSubscription(ActivateSubscriptionRequest) returns (ActivateSubscriptionResponse);
+  rpc RegisterVisit(RegisterVisitRequest) returns (RegisterVisitResponse);
+}
+
+message CheckSubscriptionRequest {
+  string subscription_id = 1;
+  string client_id = 2;
+}
+
+message CheckSubscriptionResponse {
+  string subscription_id = 1;
+  string client_id = 2;
+  string status = 3;
+  int32 remaining_visits = 4;
+  string valid_until = 5;
+  bool is_valid = 6;
+}
+
+message ActivateSubscriptionRequest {
+  string subscription_id = 1;
+  string payment_id = 2;
+}
+
+message ActivateSubscriptionResponse {
+  string subscription_id = 1;
+  string status = 2;
+  string start_date = 3;
+  string end_date = 4;
+  int32 remaining_visits = 5;
+}
+
+message RegisterVisitRequest {
+  string subscription_id = 1;
+}
+
+message RegisterVisitResponse {
+  string subscription_id = 1;
+  int32 remaining_visits = 2;
+  bool updated = 3;
+}

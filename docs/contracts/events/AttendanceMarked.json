@@ -1,0 +1,15 @@
+{
+  "event_id": "c9d0e1f2-a3b4-5678-2345-789012345678",
+  "event_type": "AttendanceMarked",
+  "occurred_at": "2026-10-30T16:05:00Z",
+  "producer": "booking-service",
+  "version": 1,
+  "correlation_id": "88888888-9999-aaaa-bbbb-cccccccccccc",
+  "payload": {
+    "booking_id": "bk-1101",
+    "client_id": "cl-7001",
+    "schedule_id": "sch-2001",
+    "subscription_id": "sub-6001",
+    "status": "ATTENDED"
+  }
+}

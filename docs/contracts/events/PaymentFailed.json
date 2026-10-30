@@ -1,0 +1,18 @@
+{
+  "event_id": "e1f2a3b4-c5d6-7890-4567-901234567890",
+  "event_type": "PaymentFailed",
+  "occurred_at": "2026-10-30T15:29:00Z",
+  "producer": "payment-service",
+  "version": 1,
+  "correlation_id": "99999999-aaaa-bbbb-cccc-dddddddddddd",
+  "payload": {
+    "payment_id": "pay-9002",
+    "client_id": "cl-7001",
+    "subscription_id": "sub-6002",
+    "amount": 4500.00,
+    "currency": "RUB",
+    "status": "FAILED",
+    "payment_method": "CARD",
+    "failure_reason": "INSUFFICIENT_FUNDS"
+  }
+}

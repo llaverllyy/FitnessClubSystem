@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package fitnessclub.training.v1;
+
+option java_multiple_files = true;
+option java_package = "com.example.fitnessclubsystem.training.v1";
+
+service TrainingGrpcService {
+  rpc GetScheduleAvailability(GetScheduleAvailabilityRequest) returns (GetScheduleAvailabilityResponse);
+  rpc ReserveSlot(ReserveSlotRequest) returns (ReserveSlotResponse);
+  rpc ReleaseSlot(ReleaseSlotRequest) returns (ReleaseSlotResponse);
+}
+
+message GetScheduleAvailabilityRequest {
+  string schedule_id = 1;
+}
+
+message GetScheduleAvailabilityResponse {
+  string schedule_id = 1;
+  string status = 2;
+  int32 available_slots = 3;
+  string start_time = 4;
+  string end_time = 5;
+}
+
+message ReserveSlotRequest {
+  string schedule_id = 1;
+}
+
+message ReserveSlotResponse {
+  string schedule_id = 1;
+  int32 available_slots = 2;
+  bool reserved = 3;
+}
+
+message ReleaseSlotRequest {
+  string schedule_id = 1;
+}
+
+message ReleaseSlotResponse {
+  string schedule_id = 1;
+  int32 available_slots = 2;
+  bool released = 3;
+}

@@ -1,0 +1,13 @@
+{
+  "event_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "event_type": "UserRegistered",
+  "occurred_at": "2026-10-30T15:00:00Z",
+  "producer": "identity-service",
+  "version": 1,
+  "correlation_id": "11111111-2222-3333-4444-555555555555",
+  "payload": {
+    "user_id": "u-1001",
+    "role": "CLIENT",
+    "email": "client@example.com"
+  }
+}

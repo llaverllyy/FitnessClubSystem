@@ -1,0 +1,17 @@
+{
+  "event_id": "d0e1f2a3-b4c5-6789-3456-890123456789",
+  "event_type": "PaymentCompleted",
+  "occurred_at": "2026-10-30T15:28:00Z",
+  "producer": "payment-service",
+  "version": 1,
+  "correlation_id": "55555555-6666-7777-8888-999999999999",
+  "payload": {
+    "payment_id": "pay-9001",
+    "client_id": "cl-7001",
+    "subscription_id": "sub-6001",
+    "amount": 4500.00,
+    "currency": "RUB",
+    "status": "COMPLETED",
+    "payment_method": "CARD"
+  }
+}

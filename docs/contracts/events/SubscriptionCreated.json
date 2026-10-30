@@ -1,0 +1,14 @@
+{
+  "event_id": "e5f6a7b8-c9d0-1234-ef01-345678901234",
+  "event_type": "SubscriptionCreated",
+  "occurred_at": "2026-10-30T15:25:00Z",
+  "producer": "membership-service",
+  "version": 1,
+  "correlation_id": "55555555-6666-7777-8888-999999999999",
+  "payload": {
+    "subscription_id": "sub-6001",
+    "client_id": "cl-7001",
+    "plan_id": "plan-8001",
+    "status": "PENDING"
+  }
+}

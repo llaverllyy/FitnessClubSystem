@@ -1,0 +1,18 @@
+{
+  "event_id": "f6a7b8c9-d0e1-2345-f012-456789012345",
+  "event_type": "SubscriptionActivated",
+  "occurred_at": "2026-10-30T15:30:00Z",
+  "producer": "membership-service",
+  "version": 1,
+  "correlation_id": "55555555-6666-7777-8888-999999999999",
+  "payload": {
+    "subscription_id": "sub-6001",
+    "client_id": "cl-7001",
+    "plan_id": "plan-8001",
+    "status": "ACTIVE",
+    "start_date": "2026-10-30",
+    "end_date": "2026-11-29",
+    "remaining_visits": 12,
+    "payment_id": "pay-9001"
+  }
+}

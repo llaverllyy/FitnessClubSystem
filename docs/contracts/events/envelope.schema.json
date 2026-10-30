@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fitnessclub.local/schemas/event-envelope.json",
+  "title": "KafkaEventEnvelope",
+  "type": "object",
+  "required": [
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "producer",
+    "version",
+    "payload"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "producer": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "payload": {
+      "type": "object"
+    }
+  },
+  "additionalProperties": false
+}

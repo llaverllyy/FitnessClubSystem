@@ -409,484 +409,141 @@ revenue_stats.
 5. GraphQL API
 GraphQL используется как единая внешняя точка входа. Клиент работает только с GraphQL Gateway, а тот вызывает нужные внутренние сервисы и собирает единый ответ.
 
+Схема SDL: docs/contracts/graphql/schema.graphql
+
 5.1. Query
-
-type Query {
-  me: UserProfile!
-  schedule(filter: ScheduleFilterInput): [ScheduleItem!]!
-  trainerSchedule(trainerId: ID!, from: String, to: String): [ScheduleItem!]!
-  myBookings(status: BookingStatus): [BookingItem!]!
-  mySubscriptions: [SubscriptionItem!]!
-  myPayments: [PaymentItem!]!
-  myNotifications(unreadOnly: Boolean): [NotificationItem!]!
-  analytics(filter: AnalyticsFilterInput!): AnalyticsReport!
-}
-
-Назначение Query:
-me - получение профиля текущего пользователя;
-schedule - просмотр доступного расписания;
-trainerSchedule - просмотр расписания тренера;
-myBookings - список и история записей клиента;
-mySubscriptions - список абонементов клиента;
-myPayments - история оплат;
-myNotifications - уведомления пользователя;
-analytics - агрегированная аналитика для администратора.
+me — профиль текущего пользователя;
+schedule — доступное расписание;
+trainerSchedule — расписание тренера;
+myBookings — записи клиента;
+mySubscriptions — абонементы клиента;
+myPayments — история оплат;
+myNotifications — уведомления;
+analytics — агрегированная аналитика для администратора.
 
 5.2. Mutation
+registerUser, login — регистрация и вход;
+createClass, updateClass — занятия;
+createSchedule, changeScheduleStatus — расписание;
+purchaseSubscription, confirmPayment — покупка и подтверждение оплаты абонемента;
+bookSchedule, cancelBooking — запись и отмена;
+markAttendance — фиксация посещаемости.
 
-type Mutation {
-  registerUser(input: RegisterUserInput!): AuthPayload!
-  login(input: LoginInput!): AuthPayload!
-  createClass(input: CreateClassInput!): ClassItem!
-  updateClass(input: UpdateClassInput!): ClassItem!
-  createSchedule(input: CreateScheduleInput!): ScheduleItem!
-  changeScheduleStatus(input: ChangeScheduleStatusInput!): ScheduleItem!
-  purchaseSubscription(input: PurchaseSubscriptionInput!): SubscriptionPurchasePayload!
-  confirmPayment(input: ConfirmPaymentInput!): PaymentItem!
-  bookSchedule(input: BookScheduleInput!): BookingItem!
-  cancelBooking(input: CancelBookingInput!): BookingItem!
-  markAttendance(input: MarkAttendanceInput!): BookingItem!
-}
+5.3. Основные типы и input
+Типы и input описаны в docs/contracts/graphql/schema.graphql:
+UserProfile, ClientProfile, TrainerProfile, ClassItem, ScheduleItem,
+SubscriptionItem, PaymentItem, BookingItem, NotificationItem, AnalyticsReport,
+AuthPayload, SubscriptionPurchasePayload, HallLoadItem, PopularClassItem,
+ActiveClientItem.
 
-Назначение Mutation:
-registerUser и login используются для регистрации и входа;
-createClass и updateClass используются для работы с занятиями;
-createSchedule и changeScheduleStatus используются для работы с расписанием;
-purchaseSubscription и confirmPayment используются при покупке абонемента;
-bookSchedule и cancelBooking используются для записи и отмены записи;
-markAttendance используется для фиксации посещаемости.
-
-5.3. Основные типы данных
-
-type UserProfile {
-  id: ID!
-  email: String!
-  role: String!
-  client: ClientProfile
-  trainer: TrainerProfile
-}
-
-type ClientProfile {
-  id: ID!
-  fullName: String!
-  phone: String!
-  membershipStatus: String!
-}
-
-type TrainerProfile {
-  id: ID!
-  fullName: String!
-  phone: String!
-  specialization: String!
-  employmentStatus: String!
-}
-
-type ClassItem {
-  id: ID!
-  title: String!
-  description: String
-  durationMinutes: Int!
-  capacity: Int!
-  categoryId: ID!
-  trainerId: ID!
-  status: String!
-}
-
-type ScheduleItem {
-  id: ID!
-  classId: ID!
-  hallId: ID!
-  trainerId: ID!
-  startTime: String!
-  endTime: String!
-  status: String!
-  availableSlots: Int!
-}
-
-type SubscriptionItem {
-  id: ID!
-  clientId: ID!
-  planId: ID!
-  startDate: String
-  endDate: String
-  remainingVisits: Int!
-  status: String!
-}
-
-type PaymentItem {
-  id: ID!
-  clientId: ID!
-  subscriptionId: ID!
-  amount: Float!
-  currency: String!
-  paymentMethod: String!
-  status: String!
-  paidAt: String
-}
-
-type BookingItem {
-  id: ID!
-  clientId: ID!
-  scheduleId: ID!
-  subscriptionId: ID!
-  status: String!
-  bookedAt: String!
-  cancelledAt: String
-  attendanceMarkedAt: String
-}
-
-type NotificationItem {
-  id: ID!
-  type: String!
-  channel: String!
-  title: String!
-  message: String!
-  status: String!
-  createdAt: String!
-  sentAt: String
-}
-
-type AnalyticsReport {
-  totalRevenue: Float!
-  totalBookings: Int!
-  totalAttendance: Int!
-  hallLoad: [HallLoadItem!]!
-  popularClasses: [PopularClassItem!]!
-  activeClients: [ActiveClientItem!]!
-}
-
-5.4. Input-типы
-
-input RegisterUserInput {
-  email: String!
-  password: String!
-  role: String!
-  fullName: String!
-  phone: String!
-  birthDate: String
-  specialization: String
-}
-
-input LoginInput {
-  email: String!
-  password: String!
-}
-
-input CreateClassInput {
-  title: String!
-  description: String
-  durationMinutes: Int!
-  capacity: Int!
-  categoryId: ID!
-  trainerId: ID!
-}
-
-input UpdateClassInput {
-  id: ID!
-  title: String
-  description: String
-  durationMinutes: Int
-  capacity: Int
-  categoryId: ID
-  trainerId: ID
-  status: String
-}
-
-input CreateScheduleInput {
-  classId: ID!
-  hallId: ID!
-  trainerId: ID!
-  startTime: String!
-  endTime: String!
-}
-
-input ChangeScheduleStatusInput {
-  scheduleId: ID!
-  status: String!
-}
-
-input PurchaseSubscriptionInput {
-  clientId: ID!
-  planId: ID!
-  paymentMethod: String!
-}
-
-input ConfirmPaymentInput {
-  paymentId: ID!
-  status: String!
-}
-
-input BookScheduleInput {
-  clientId: ID!
-  scheduleId: ID!
-  subscriptionId: ID!
-}
-
-input CancelBookingInput {
-  bookingId: ID!
-}
-
-input MarkAttendanceInput {
-  bookingId: ID!
-  status: String!
-}
-
-input ScheduleFilterInput {
-  trainerId: ID
-  categoryId: ID
-  startDate: String
-  endDate: String
-  status: String
-}
-
-input AnalyticsFilterInput {
-  fromDate: String!
-  toDate: String!
-}
-
-enum BookingStatus {
-  BOOKED
-  CANCELLED
-  ATTENDED
-  NO_SHOW
-  CANCELLED_BY_CLUB
-}
-
-5.5. Связь GraphQL операций со сценариями
-registerUser и login используются в сценарии регистрации и входа.
-schedule и trainerSchedule используются для просмотра расписания.
-createClass и updateClass используются в сценарии управления занятиями.
-createSchedule и changeScheduleStatus используются при работе с расписанием.
-purchaseSubscription и confirmPayment используются при оформлении абонемента.
-bookSchedule и cancelBooking используются в сценариях записи и отмены записи.
-markAttendance используется в сценарии фиксации посещаемости.
-myBookings, mySubscriptions, myPayments и myNotifications используются в личном кабинете клиента.
-analytics используется для получения административной аналитики.
+5.4. Связь GraphQL операций со сценариями
+registerUser и login — регистрация и вход;
+schedule и trainerSchedule — просмотр расписания;
+createClass и updateClass — управление занятиями;
+createSchedule и changeScheduleStatus — работа с расписанием;
+purchaseSubscription и confirmPayment — оформление абонемента;
+bookSchedule и cancelBooking — запись и отмена записи;
+markAttendance — фиксация посещаемости;
+myBookings, mySubscriptions, myPayments и myNotifications — личный кабинет;
+analytics — административная аналитика.
 
 6. Сценарии взаимодействия и контракты
 6.1. gRPC-взаимодействия
 gRPC используется тогда, когда без ответа другого сервиса операция не может быть завершена.
 
-Identity Service:
-GetTrainer.
-Назначение: проверить существование тренера и получить его данные.
-Вызывается сервисом Training Management Service.
+Файлы .proto:
+docs/contracts/proto/identity.proto
+docs/contracts/proto/training.proto
+docs/contracts/proto/membership.proto
 
-GetUserContact.
-Назначение: получить email и телефон пользователя.
-Вызывается сервисом Notification Service.
+Identity Service:
+GetTrainer — проверить тренера; вызывается Training Management Service.
+GetUserContact — получить email и телефон; вызывается Notification Service.
 
 Training Management Service:
-GetScheduleAvailability.
-Назначение: получить статус занятия, время и число свободных мест.
-Вызывается сервисом Booking Service.
-
-ReserveSlot.
-Назначение: уменьшить число свободных мест после успешной записи.
-Вызывается сервисом Booking Service.
-
-ReleaseSlot.
-Назначение: освободить место при отмене записи.
-Вызывается сервисом Booking Service.
+GetScheduleAvailability — статус занятия и свободные места; вызывается Booking Service.
+ReserveSlot — уменьшить число мест; вызывается Booking Service.
+ReleaseSlot — освободить место; вызывается Booking Service.
 
 Membership Service:
-CheckSubscription.
-Назначение: проверить действительность абонемента.
-Вызывается сервисом Booking Service.
+CheckSubscription — проверить абонемент; вызывается Booking Service.
+ActivateSubscription — активировать абонемент после оплаты; вызывается Payment Service.
+RegisterVisit — списать посещение; вызывается Booking Service.
 
-ActivateSubscription.
-Назначение: активировать абонемент после оплаты.
-Вызывается сервисом Payment Service.
+Абонемент переводится в ACTIVE через ActivateSubscription.
+Membership Service не подписан на PaymentCompleted.
 
-RegisterVisit.
-Назначение: списать посещение после фактического присутствия.
-Вызывается сервисом Booking Service.
+6.2. Kafka: таблица «событие — издатель — подписчики»
 
-6.2. Укрупнённые protobuf-контракты
+Событие UserRegistered. Топик user-events. Издатель: Identity Service. Подписчики: Notification Service. Назначение: приветственное уведомление.
 
-syntax = "proto3";
+Событие ScheduleCreated. Топик schedule-events. Издатель: Training Management Service. Подписчики: Analytics Service. Назначение: учёт слотов зала.
 
-service IdentityGrpcService {
-  rpc GetTrainer(GetTrainerRequest) returns (GetTrainerResponse);
-  rpc GetUserContact(GetUserContactRequest) returns (GetUserContactResponse);
+Событие ScheduleStatusChanged. Топик schedule-events. Издатель: Training Management Service. Подписчики: Analytics Service. Назначение: корректировка загрузки.
+
+Событие ScheduleCancelled. Топик schedule-events. Издатель: Training Management Service. Подписчики: Booking Service, Notification Service, Analytics Service. Назначение: массовая отмена записей, уведомления клиентам, корректировка агрегатов.
+
+Событие SubscriptionCreated. Топик subscription-events. Издатель: Membership Service. Подписчики: Analytics Service. Назначение: учёт оформленных абонементов.
+
+Событие SubscriptionActivated. Топик subscription-events. Издатель: Membership Service. Подписчики: Notification Service, Analytics Service. Назначение: уведомление об активации, активность по абонементам.
+
+Событие BookingCreated. Топик booking-events. Издатель: Booking Service. Подписчики: Notification Service, Analytics Service. Назначение: подтверждение записи, популярность и активность.
+
+Событие BookingCancelled. Топик booking-events. Издатель: Booking Service. Подписчики: Notification Service, Analytics Service. Назначение: подтверждение отмены, корректировка агрегатов.
+
+Событие AttendanceMarked. Топик booking-events. Издатель: Booking Service. Подписчики: Analytics Service. Назначение: посещаемость и активность клиентов.
+
+Событие PaymentCompleted. Топик payment-events. Издатель: Payment Service. Подписчики: Notification Service, Analytics Service. Назначение: уведомление об оплате, выручка.
+
+Событие PaymentFailed. Топик payment-events. Издатель: Payment Service. Подписчики: Notification Service. Назначение: уведомление о неуспешной оплате.
+
+Notification Service подписан на:
+UserRegistered, ScheduleCancelled, BookingCreated, BookingCancelled,
+SubscriptionActivated, PaymentCompleted, PaymentFailed.
+
+Analytics Service подписан на:
+ScheduleCreated, ScheduleStatusChanged, ScheduleCancelled,
+SubscriptionCreated, SubscriptionActivated,
+BookingCreated, BookingCancelled, AttendanceMarked,
+PaymentCompleted.
+
+6.3. Конверт и payload Kafka-событий
+Схема конверта: docs/contracts/events/envelope.schema.json
+Примеры сообщений: docs/contracts/events/
+
+Конверт события:
+{
+  "event_id": "uuid",
+  "event_type": "PaymentCompleted",
+  "occurred_at": "2026-10-30T15:28:00Z",
+  "producer": "payment-service",
+  "version": 1,
+  "correlation_id": "uuid",
+  "payload": { }
 }
 
-message GetTrainerRequest {
-  string trainer_id = 1;
+Payload PaymentCompleted:
+{
+  "payment_id": "pay-9001",
+  "client_id": "cl-7001",
+  "subscription_id": "sub-6001",
+  "amount": 4500.00,
+  "currency": "RUB",
+  "status": "COMPLETED",
+  "payment_method": "CARD"
 }
 
-message GetTrainerResponse {
-  string trainer_id = 1;
-  string full_name = 2;
-  string employment_status = 3;
-  bool exists = 4;
+Payload SubscriptionActivated:
+{
+  "subscription_id": "sub-6001",
+  "client_id": "cl-7001",
+  "plan_id": "plan-8001",
+  "status": "ACTIVE",
+  "start_date": "2026-10-30",
+  "end_date": "2026-11-29",
+  "remaining_visits": 12,
+  "payment_id": "pay-9001"
 }
-
-message GetUserContactRequest {
-  string user_id = 1;
-}
-
-message GetUserContactResponse {
-  string user_id = 1;
-  string email = 2;
-  string phone = 3;
-  bool exists = 4;
-}
-
-service TrainingGrpcService {
-  rpc GetScheduleAvailability(GetScheduleAvailabilityRequest) returns (GetScheduleAvailabilityResponse);
-  rpc ReserveSlot(ReserveSlotRequest) returns (ReserveSlotResponse);
-  rpc ReleaseSlot(ReleaseSlotRequest) returns (ReleaseSlotResponse);
-}
-
-message GetScheduleAvailabilityRequest {
-  string schedule_id = 1;
-}
-
-message GetScheduleAvailabilityResponse {
-  string schedule_id = 1;
-  string status = 2;
-  int32 available_slots = 3;
-  string start_time = 4;
-  string end_time = 5;
-}
-
-message ReserveSlotRequest {
-  string schedule_id = 1;
-}
-
-message ReserveSlotResponse {
-  string schedule_id = 1;
-  int32 available_slots = 2;
-  bool reserved = 3;
-}
-
-message ReleaseSlotRequest {
-  string schedule_id = 1;
-}
-
-message ReleaseSlotResponse {
-  string schedule_id = 1;
-  int32 available_slots = 2;
-  bool released = 3;
-}
-
-service MembershipGrpcService {
-  rpc CheckSubscription(CheckSubscriptionRequest) returns (CheckSubscriptionResponse);
-  rpc ActivateSubscription(ActivateSubscriptionRequest) returns (ActivateSubscriptionResponse);
-  rpc RegisterVisit(RegisterVisitRequest) returns (RegisterVisitResponse);
-}
-
-message CheckSubscriptionRequest {
-  string subscription_id = 1;
-  string client_id = 2;
-}
-
-message CheckSubscriptionResponse {
-  string subscription_id = 1;
-  string client_id = 2;
-  string status = 3;
-  int32 remaining_visits = 4;
-  string valid_until = 5;
-  bool is_valid = 6;
-}
-
-message ActivateSubscriptionRequest {
-  string subscription_id = 1;
-  string payment_id = 2;
-}
-
-message ActivateSubscriptionResponse {
-  string subscription_id = 1;
-  string status = 2;
-  string start_date = 3;
-  string end_date = 4;
-  int32 remaining_visits = 5;
-}
-
-message RegisterVisitRequest {
-  string subscription_id = 1;
-}
-
-message RegisterVisitResponse {
-  string subscription_id = 1;
-  int32 remaining_visits = 2;
-  bool updated = 3;
-}
-
-6.3. Kafka-события
-
-Топик user-events:
-Событие UserRegistered.
-Отправитель: Identity Service.
-Получатели: Notification Service, Analytics Service.
-
-Payload:
-event_id - string.
-user_id - string.
-role - string.
-email - string.
-occurred_at - string.
-
-Топик schedule-events:
-События ScheduleCreated, ScheduleStatusChanged, ScheduleCancelled.
-Отправитель: Training Management Service.
-Получатели: Booking Service, Notification Service, Analytics Service.
-
-Payload:
-event_id - string.
-schedule_id - string.
-class_id - string.
-trainer_id - string.
-hall_id - string.
-status - string.
-start_time - string.
-end_time - string.
-occurred_at - string.
-
-Топик subscription-events:
-События SubscriptionCreated, SubscriptionActivated.
-Отправитель: Membership Service.
-Получатели: Notification Service, Analytics Service.
-
-Payload:
-event_id - string.
-subscription_id - string.
-client_id - string.
-plan_id - string.
-status - string.
-start_date - string.
-end_date - string.
-occurred_at - string.
-
-Топик booking-events:
-События BookingCreated, BookingCancelled, AttendanceMarked.
-Отправитель: Booking Service.
-Получатели: Notification Service, Analytics Service.
-
-Payload:
-event_id - string.
-booking_id - string.
-client_id - string.
-schedule_id - string.
-subscription_id - string.
-status - string.
-occurred_at - string.
-
-Топик payment-events:
-События PaymentCompleted, PaymentFailed.
-Отправитель: Payment Service.
-Получатели: Membership Service, Notification Service, Analytics Service.
-
-Payload:
-event_id - string.
-payment_id - string.
-client_id - string.
-subscription_id - string.
-amount - decimal.
-status - string.
-payment_method - string.
-occurred_at - string.
 
 7. Последовательность выполнения бизнес-сценариев
 7.1. Регистрация пользователя
@@ -915,14 +572,17 @@ occurred_at - string.
 2) Gateway передаёт запрос в Membership Service.
 3) Сервис читает subscription_plans.
 4) В subscriptions создаётся запись со статусом PENDING.
-5) Через Gateway создаётся платёж в Payment Service.
-6) В payments создаётся запись со статусом PENDING.
-7) После подтверждения оплаты вызывается confirmPayment.
-8) Payment Service переводит платёж в статус COMPLETED.
-9) Payment Service по gRPC вызывает ActivateSubscription.
-10) Membership Service переводит абонемент в статус ACTIVE, задаёт даты действия и remaining_visits.
-11) Публикуются события PaymentCompleted и SubscriptionActivated.
-12) Notification Service создаёт уведомление об успешной оплате.
+5) Публикуется событие SubscriptionCreated.
+6) Через Gateway создаётся платёж в Payment Service.
+7) В payments создаётся запись со статусом PENDING.
+8) После подтверждения оплаты вызывается confirmPayment.
+9) Payment Service переводит платёж в статус COMPLETED.
+10) Payment Service по gRPC вызывает ActivateSubscription.
+11) Membership Service переводит абонемент в статус ACTIVE, задаёт даты действия и remaining_visits.
+12) Membership Service публикует SubscriptionActivated.
+13) Payment Service публикует PaymentCompleted.
+14) Notification Service создаёт уведомления об оплате и активации.
+15) Analytics Service обновляет выручку.
 
 7.4. Запись клиента на занятие
 1) Клиент вызывает bookSchedule.
@@ -1013,6 +673,6 @@ occurred_at - string.
 5) Просмотр основных данных через GraphQL.
 
 9. Итог
-В лабораторной работе была выполнена техническая детализация системы управления фитнес-клубом. 
+В лабораторной работе была выполнена техническая детализация системы управления фитнес-клубом.
 Для каждого сервиса определены таблицы, поля, типы и связи внутри базы.
 Также показана связь структур данных со сценариями системы, спроектирован внешний GraphQL API, описаны gRPC-контракты и Kafka-события, а затем сформирован поэтапный план разработки.

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package fitnessclub.identity.v1;
+
+option java_multiple_files = true;
+option java_package = "com.example.fitnessclubsystem.identity.v1";
+
+service IdentityGrpcService {
+  rpc GetTrainer(GetTrainerRequest) returns (GetTrainerResponse);
+  rpc GetUserContact(GetUserContactRequest) returns (GetUserContactResponse);
+}
+
+message GetTrainerRequest {
+  string trainer_id = 1;
+}
+
+message GetTrainerResponse {
+  string trainer_id = 1;
+  string full_name = 2;
+  string employment_status = 3;
+  bool exists = 4;
+}
+
+message GetUserContactRequest {
+  string user_id = 1;
+}
+
+message GetUserContactResponse {
+  string user_id = 1;
+  string email = 2;
+  string phone = 3;
+  bool exists = 4;
+}

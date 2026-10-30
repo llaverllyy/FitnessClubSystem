@@ -1,0 +1,15 @@
+{
+  "event_id": "b8c9d0e1-f2a3-4567-1234-678901234567",
+  "event_type": "BookingCancelled",
+  "occurred_at": "2026-10-30T15:40:00Z",
+  "producer": "booking-service",
+  "version": 1,
+  "correlation_id": "77777777-8888-9999-aaaa-bbbbbbbbbbbb",
+  "payload": {
+    "booking_id": "bk-1101",
+    "client_id": "cl-7001",
+    "schedule_id": "sch-2001",
+    "subscription_id": "sub-6001",
+    "status": "CANCELLED"
+  }
+}
