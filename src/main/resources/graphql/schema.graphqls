@@ -1,0 +1,188 @@
+scalar DateTime
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  ATTENDED
+  NO_SHOW
+  CANCELLED_BY_CLUB
+}
+
+enum UserRole {
+  CLIENT
+  TRAINER
+  ADMIN
+}
+
+enum ScheduleStatus {
+  PLANNED
+  COMPLETED
+  CANCELLED
+}
+
+enum SubscriptionStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+type Query {
+  me: UserProfile!
+  user(id: ID!): UserProfile!
+  classById(id: ID!): ClassItem!
+  schedule(filter: ScheduleFilterInput): [ScheduleItem!]!
+  scheduleById(id: ID!): ScheduleItem!
+  trainerSchedule(trainerId: ID!, from: DateTime, to: DateTime): [ScheduleItem!]!
+  myBookings(status: BookingStatus): [BookingItem!]!
+  bookingById(id: ID!): BookingItem!
+  mySubscriptions: [SubscriptionItem!]!
+  subscriptionById(id: ID!): SubscriptionItem!
+  myPayments: [PaymentItem!]!
+  paymentById(id: ID!): PaymentItem!
+  myNotifications(unreadOnly: Boolean = false): [NotificationItem!]!
+  analytics(filter: AnalyticsFilterInput!): AnalyticsReport!
+}
+
+type UserProfile {
+  id: ID!
+  email: String!
+  role: UserRole!
+  client: ClientProfile
+  trainer: TrainerProfile
+}
+
+type ClientProfile {
+  id: ID!
+  fullName: String!
+  phone: String!
+  membershipStatus: String!
+}
+
+type TrainerProfile {
+  id: ID!
+  fullName: String!
+  phone: String!
+  specialization: String!
+  employmentStatus: String!
+}
+
+type ClassItem {
+  id: ID!
+  title: String!
+  description: String
+  durationMinutes: Int!
+  capacity: Int!
+  categoryId: ID!
+  trainerId: ID!
+  status: String!
+}
+
+type ScheduleItem {
+  id: ID!
+  classId: ID!
+  hallId: ID!
+  trainerId: ID!
+  startTime: DateTime!
+  endTime: DateTime!
+  status: ScheduleStatus!
+  availableSlots: Int!
+  classItem: ClassItem
+  hallName: String
+}
+
+type SubscriptionItem {
+  id: ID!
+  clientId: ID!
+  planId: ID!
+  planName: String
+  startDate: String
+  endDate: String
+  remainingVisits: Int!
+  status: SubscriptionStatus!
+}
+
+type PaymentItem {
+  id: ID!
+  clientId: ID!
+  subscriptionId: ID!
+  amount: Float!
+  currency: String!
+  paymentMethod: String!
+  status: PaymentStatus!
+  paidAt: DateTime
+}
+
+type BookingItem {
+  id: ID!
+  clientId: ID!
+  scheduleId: ID!
+  subscriptionId: ID!
+  status: BookingStatus!
+  bookedAt: DateTime!
+  cancelledAt: DateTime
+  attendanceMarkedAt: DateTime
+  scheduleStartTime: DateTime
+  classTitle: String
+}
+
+type NotificationItem {
+  id: ID!
+  type: String!
+  channel: String!
+  title: String!
+  message: String!
+  status: String!
+  createdAt: DateTime!
+  sentAt: DateTime
+}
+
+type AnalyticsReport {
+  totalRevenue: Float!
+  totalBookings: Int!
+  totalAttendance: Int!
+  hallLoad: [HallLoadItem!]!
+  popularClasses: [PopularClassItem!]!
+  activeClients: [ActiveClientItem!]!
+}
+
+type HallLoadItem {
+  hallId: ID!
+  statDate: String!
+  totalSlots: Int!
+  bookedSlots: Int!
+  attendedCount: Int!
+}
+
+type PopularClassItem {
+  classId: ID!
+  bookingsCount: Int!
+  cancellationsCount: Int!
+  attendanceCount: Int!
+}
+
+type ActiveClientItem {
+  clientId: ID!
+  bookingsCount: Int!
+  attendanceCount: Int!
+  cancellationsCount: Int!
+}
+
+input ScheduleFilterInput {
+  trainerId: ID
+  categoryId: ID
+  startDate: DateTime
+  endDate: DateTime
+  status: ScheduleStatus
+}
+
+input AnalyticsFilterInput {
+  fromDate: String!
+  toDate: String!
+}
